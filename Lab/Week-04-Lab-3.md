@@ -98,11 +98,13 @@ void process_color_sensing(adc_oneshot_unit_handle_t adc_handle, const char *col
     vTaskDelay(pdMS_TO_TICKS(300)); 
 
     // 1. สุ่มเก็บระดับประจุบิตดิบความเร็วสูง (ห่างกันตัวอย่างละ 10ms)
+    
     for (int i = 0; i < NUM_SAMPLES; i++) {
         int raw_value = 0;
         ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, RX_ADC_CHANNEL, &raw_value));
         raw_samples[i] = raw_value;
         vTaskDelay(pdMS_TO_TICKS(10)); 
+        // ถ้านักศึกษาใช้ค่านี้แล้วได้ผลไม่ดี หรือไม่น่าพอใจ สามารถปรับ vTaskDelay(pdMS_TO_TICKS(10)); ให้มีเวลาหน่วงเพิ่มขึ้น
     }
 
     // 2. จัดเรียงข้อมูลเพื่อหาจุดบกพร่องขอบนอกด้วย qsort
@@ -117,17 +119,17 @@ void process_color_sensing(adc_oneshot_unit_handle_t adc_handle, const char *col
         raw_sum += raw_samples[i];
     }
 
-    // 4. คำนวณค่าเฉลี่ยทางสถิติระดับบิตดิบ
+    // 4. คำนวณค่าเฉลี่ยทางสถิติระดับบิต raw
     double mean_raw = raw_sum / valid_count;
 
-    // 5. คำนวณค่าส่วนเบี่ยงเบนมาตรฐาน (SD) ระดับบิตดิบ
+    // 5. คำนวณค่าส่วนเบี่ยงเบนมาตรฐาน (SD) ระดับบิต raw
     double variance_sum = 0.0;
     for (int i = trim_count; i < NUM_SAMPLES - trim_count; i++) {
         variance_sum += pow((raw_samples[i] - mean_raw), 2);
     }
     double sd_raw = sqrt(variance_sum / (valid_count - 1));
 
-    // 6. ส่งต่อข้อมูลที่สะอาดเข้ากระบวนการแปลงหน่วยเป็นมิลลิโวลต์ (mV Metadata)
+    // 6. ส่งข้อมูลที่สะอาดเข้ากระบวนการแปลงหน่วยเป็นมิลลิโวลต์ (mV Metadata)
     int final_voltage_mv = 0;
     int sd_voltage_mv = 0;
 
@@ -143,13 +145,13 @@ void process_color_sensing(adc_oneshot_unit_handle_t adc_handle, const char *col
         sd_voltage_mv = ((int)sd_raw * V_REF) / 4095;
     }
 
-    // ป้องกันกรณีแสงมืดสนิทและค่าแกว่งศูนย์ระบบ ให้ควบคุมความเงียบเป็น 0V
+    // ป้องกันกรณีแสงมืดสนิทและค่าแกว่ง  ควบคุมความเงียบเป็น 0V
     if (mean_raw <= 2.0) {
         final_voltage_mv = 0;
         sd_voltage_mv = 0;
     }
 
-    // 7. พิมพ์ผลลัพธ์ข้อมูลเชิงสถิติออกทาง Serial Port ตามข้อกำหนด
+    // 7. พิมพ์ผลลัพธ์ข้อมูลเชิงสถิติออกทาง Serial Port  
     printf("Color %s, n = %d (filtered), mean = %.2f, sd = %.2f\n", 
            color_name, valid_count, (double)final_voltage_mv, (double)sd_voltage_mv);
 }
