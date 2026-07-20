@@ -3,7 +3,7 @@
 ### 4.  บันทึกผลการทดลอง 
 
 #### 4.1 จาก `idf.py monitor` 
-<img width="757" height="816" alt="image" src="https://github.com/user-attachments/assets/c512ebdb-26f3-4922-a79d-185dcfec1b14" />
+<img width="772" height="821" alt="image" src="https://github.com/user-attachments/assets/37f25332-bc36-44a4-800a-ec913577d3f2" />
 
 
 #### 4.2 จากการสังเกตุ LED 
