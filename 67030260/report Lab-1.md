@@ -7,3 +7,4 @@
 
 
 #### 4.2 จากการสังเกตุ LED 
+https://youtube.com/shorts/nDyezAka1io
